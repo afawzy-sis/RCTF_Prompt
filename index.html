@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From Prompt to Powerful Lesson Plan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Dark Theme Colors */
+            --bg-dark: #050914;
+            --bg-panel: rgba(13, 20, 38, 0.7);
+            
+            /* Neon Accents */
+            --neon-cyan: #00f0ff;
+            --neon-purple: #d946ef;
+            --neon-green: #10b981;
+            --neon-amber: #f59e0b;
+            --neon-orange: #f97316; /* For the RCTF game */
+            
+            /* Text Colors */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .ar-text {
+            font-family: 'Cairo', sans-serif;
+            direction: rtl;
+        }
+
+        .presentation-wrapper {
+            aspect-ratio: 16 / 9;
+            width: 100vw;
+            max-height: 100vh;
+            max-width: calc(100vh * (16 / 9));
+            position: relative;
+            background: radial-gradient(circle at top right, #1a0b2e 0%, var(--bg-dark) 60%);
+            overflow: hidden;
+            container-type: size;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        .presentation-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .slides-container {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+            transform: scale(0.98);
+            padding: 4cqh 6cqw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        /* Animations */
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes pulseIcon {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.1); filter: brightness(1.3); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        .anim-float { animation: floatIcon 3s ease-in-out infinite; }
+        .anim-pulse { animation: pulseIcon 2s ease-in-out infinite; }
+        .anim-float-delayed { animation: floatIcon 3s ease-in-out infinite 1.5s; }
+
+        h1 {
+            font-size: 7cqh;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            text-align: center;
+            line-height: 1.2;
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+            margin-bottom: 3cqh;
+        }
+
+        h2.slide-title {
+            font-size: 5.5cqh;
+            color: var(--neon-cyan);
+            margin-bottom: 4cqh;
+            width: 100%;
+            text-align: left;
+            font-weight: 800;
+            border-bottom: 2px solid rgba(0, 240, 255, 0.3);
+            padding-bottom: 1.5cqh;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        
+        .slide-title .ar-subtitle {
+            font-size: 4cqh;
+            color: var(--neon-purple);
+            text-shadow: 0 0 10px rgba(217, 70, 239, 0.3);
+            font-weight: 600;
+        }
+
+        .title-center { text-align: center !important; justify-content: center !important; flex-direction: column; align-items: center !important; border: none !important; }
+
+        p, li { font-size: 3cqh; line-height: 1.7; color: var(--text-main); }
+        strong { color: var(--neon-cyan); }
+        .text-purple { color: var(--neon-purple); font-weight: 600;}
+        .text-green { color: var(--neon-green); font-weight: 600;}
+        .text-amber { color: var(--neon-amber); font-weight: 600;}
+        .text-cyan { color: var(--neon-cyan); font-weight: 600;}
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4cqw; width: 100%; align-items: center; }
+        .two-col-stretch { align-items: stretch; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2cqw; width: 100%; }
+
+        .glass-panel {
+            background: var(--bg-panel);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 4cqh 3cqw;
+            border-radius: 2cqh;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glow-edge-cyan::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan); }
+        .glow-edge-purple::before { content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: var(--neon-purple); box-shadow: 0 0 15px var(--neon-purple); }
+        .glow-border-amber { border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.1); }
+        .glow-border-red { border: 1px solid rgba(244, 63, 94, 0.4); box-shadow: inset 0 0 20px rgba(244, 63, 94, 0.1); }
+        .glow-border-green { border: 1px solid rgba(16, 185, 129, 0.4); box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.1); }
+
+        .icon-box { font-size: 6cqh; margin-bottom: 2cqh; text-align: center; }
+
+        .media-container {
+            width: 100%; height: 45cqh; border-radius: 2cqh; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            background: rgba(0, 240, 255, 0.05); display: flex; justify-content: center; align-items: center; gap: 2.5cqw;
+        }
+
+        .custom-list { list-style: none; }
+        .custom-list li { margin-bottom: 2cqh; position: relative; padding-left: 2.5cqw; }
+        .custom-list li::before {
+            content: '\f0da'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            color: var(--neon-cyan); position: absolute; left: 0; top: 2px;
+        }
+
+        .highlight-banner {
+            background: linear-gradient(90deg, rgba(0, 240, 255, 0.1), rgba(217, 70, 239, 0.1));
+            border-top: 1px solid var(--neon-cyan); border-bottom: 1px solid var(--neon-purple);
+            padding: 3cqh 4cqw; text-align: center; border-radius: 1cqh; margin-top: 3cqh;
+        }
+
+        .prompt-code {
+            font-family: 'Courier New', Courier, monospace; background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.2); padding: 3cqh; border-radius: 1cqh;
+            color: #e2e8f0; font-size: 2.5cqh; line-height: 1.5;
+        }
+
+        .workflow { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 5cqh; }
+        .flow-node { 
+            background: rgba(15, 23, 42, 0.8); border: 1px solid var(--neon-cyan); 
+            padding: 2cqh 2cqw; border-radius: 1cqh; font-weight: bold; color: var(--text-main);
+            text-align: center; flex: 1; margin: 0 1cqw; box-shadow: 0 0 10px rgba(0,240,255,0.1);
+        }
+        .flow-node.active { background: rgba(217, 70, 239, 0.2); border-color: var(--neon-purple); box-shadow: 0 0 15px rgba(217, 70, 239, 0.4); }
+        .flow-arrow { color: var(--text-muted); font-size: 3cqh; }
+
+        .controls-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 8cqh;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            display: flex; justify-content: space-between; align-items: center; padding: 0 4cqw; z-index: 100;
+        }
+
+        .btn-control {
+            background: transparent; color: var(--text-muted); border: 1px solid rgba(255,255,255,0.2);
+            padding: 1cqh 2cqw; border-radius: 20px; font-size: 2.5cqh; cursor: pointer;
+            transition: all 0.2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 1cqw;
+        }
+
+        .btn-control:hover:not(:disabled) {
+            color: var(--neon-cyan); border-color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0,240,255,0.2); background: rgba(0,240,255,0.05);
+        }
+        .btn-control:disabled { opacity: 0.3; cursor: not-allowed; }
+        .progress-text { color: var(--text-muted); font-size: 2.5cqh; font-family: monospace; }
+
+        /* Interactive Game CSS */
+        .game-layout { display: flex; gap: 2cqw; height: 60cqh; width: 100%; }
+        .drop-zones-col { display: flex; flex-direction: column; gap: 2cqh; flex: 1; }
+        .drop-zone {
+            background: #0f172a; border: 2px dashed rgba(255,255,255,0.1); border-radius: 1.5cqh;
+            display: flex; align-items: center; justify-content: space-between; padding: 2cqh 3cqw;
+            height: 100%; transition: all 0.3s; position: relative;
+        }
+        .drop-zone.drag-over { background: rgba(16, 185, 129, 0.2); border-color: var(--neon-green); box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.3); }
+        .zone-letter { font-size: 5cqh; font-weight: 900; color: var(--neon-orange); }
+        .zone-label { font-size: 2.8cqh; color: var(--text-main); flex: 1; text-align: right; margin-right: 2cqw; font-weight: bold;}
+        
+        .draggable-col { display: flex; flex-direction: column; gap: 1.5cqh; flex: 1.5; background: rgba(255,255,255,0.02); padding: 2cqh; border-radius: 1.5cqh; overflow-y: auto; }
+        .drag-item {
+            background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 1cqh;
+            padding: 2cqh 2cqw; font-size: 2.4cqh; cursor: grab; text-align: right;
+            transition: transform 0.2s, box-shadow 0.2s; color: #cbd5e1;
+        }
+        .drag-item:active { cursor: grabbing; transform: scale(0.98); }
+        .drag-item.dragging { opacity: 0.5; }
+        .drag-item.correct { background: rgba(16, 185, 129, 0.1); border-color: var(--neon-green); color: var(--neon-green); cursor: default; }
+        
+        .dropped-content { font-size: 2cqh; color: var(--neon-green); text-align: right; flex: 1; margin-right: 1cqw; font-family: 'Cairo', sans-serif;}
+    </style>
+</head>
+<body>
+
+    <div class="presentation-wrapper">
+        <div class="slides-container">
+            
+            <!-- Slide 1: Cover -->
+            <div class="slide active">
+                <div class="glass-panel" style="text-align: center; padding: 10cqh 8cqw; background: rgba(13, 20, 38, 0.85); box-shadow: 0 0 40px rgba(0, 240, 255, 0.1);">
+                    <i class="fa-solid fa-microchip" style="font-size: 8cqh; color: var(--neon-purple); margin-bottom: 3cqh; text-shadow: 0 0 20px rgba(217, 70, 239, 0.5);"></i>
+                    <h1>From Prompt to<br>Powerful Lesson Plan</h1>
+                    <p style="font-size: 3.5cqh; color: var(--text-muted); margin-bottom: 2cqh;">Using ChatGPT as an AI Teaching Assistant</p>
+                    <div style="width: 10cqw; height: 2px; background: var(--neon-cyan); margin: 3cqh auto; box-shadow: 0 0 10px var(--neon-cyan);"></div>
+                    <p class="ar-text text-purple" style="font-size: 3.5cqh;">من التلقين إلى خطة درس قوية وملهمة</p>
+                </div>
+            </div>
+
+            <!-- Slide 2: Why AI -->
+            <div class="slide">
+                <h2 class="slide-title">
+                    <span>Why AI in Education?</span>
+                    <span class="ar-text ar-subtitle">لماذا الذكاء الاصطناعي؟</span>
+                </h2>
+                <div class="two-col two-col-stretch">
+                    <div class="glass-panel glow-edge-purple">
+                        <h3 style="color: var(--neon-purple); font-size: 3.5cqh; margin-bottom: 2cqh;">The Daily Challenge</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1.5cqh; margin-bottom: 4cqh; text-align: center;">
+                            <p style="background: rgba(0,0,0,0.4); padding: 1.5cqh; border-radius: 1cqh;">Massive Educational Content</p>
+                            <div style="color: var(--text-muted);"><i class="fa-solid fa-arrow-down"></i></div>
+                            <p style="background: rgba(0,0,0,0.4); padding: 1.5cqh; border-radius: 1cqh;">Limited Planning Time</p>
+                            <div style="color: var(--text-muted);"><i class="fa-solid fa-arrow-down"></i></div>
+                            <p style="background: rgba(0,0,0,0.4); padding: 1.5cqh; border-radius: 1cqh;">Diverse Student Needs</p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel glow-edge-cyan">
+                        <h3 style="color: var(--neon-cyan); font-size: 3.5cqh; margin-bottom: 2cqh;">The AI Solution</h3>
+                        <ul class="custom-list">
+                            <li><strong>Save Time:</strong> Accelerate routine planning.</li>
+                            <li><strong>Differentiation:</strong> Cater to diverse student levels.</li>
+                            <li><strong>Engaging Activities:</strong> Design interactive tasks.</li>
+                            <li><strong>Assessment:</strong> Generate formative & summative tools.</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="highlight-banner" style="width: 100%;">
+                    <p style="font-size: 3cqh; margin: 0; font-weight: 600;">
+                        <span class="text-amber">AI does not replace the teacher. The teacher remains the decision-maker.</span><br>
+                        <span class="ar-text text-muted" style="font-size: 2.2cqh;">الذكاء الاصطناعي لا يستبدل المعلم.. المعلم هو المصمم والمُقيّم لاتخاذ القرار.</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Slide 3: Why ChatGPT -->
+            <div class="slide">
+                <h2 class="slide-title title-center">
+                    <span>If AI generates content, why ChatGPT?</span>
+                </h2>
+                <div class="grid-4" style="margin-top: 4cqh;">
+                    <div class="glass-panel" style="text-align: center;">
+                        <div class="icon-box" style="color: var(--neon-cyan);"><i class="fa-solid fa-lightbulb"></i></div>
+                        <h3 style="color: #fff; font-size: 2.8cqh; margin-bottom: 1cqh;">Brainstormer</h3>
+                        <p class="ar-text text-muted" style="font-size: 2cqh;">مُولد للأفكار</p>
+                    </div>
+                    <div class="glass-panel" style="text-align: center;">
+                        <div class="icon-box" style="color: var(--neon-purple);"><i class="fa-solid fa-calendar-check"></i></div>
+                        <h3 style="color: #fff; font-size: 2.8cqh; margin-bottom: 1cqh;">Lesson Planner</h3>
+                        <p class="ar-text text-muted" style="font-size: 2cqh;">مُخطط منهجي</p>
+                    </div>
+                    <div class="glass-panel" style="text-align: center;">
+                        <div class="icon-box" style="color: var(--neon-amber);"><i class="fa-solid fa-puzzle-piece"></i></div>
+                        <h3 style="color: #fff; font-size: 2.8cqh; margin-bottom: 1cqh;">Activity Designer</h3>
+                        <p class="ar-text text-muted" style="font-size: 2cqh;">مُصمم أنشطة</p>
+                    </div>
+                    <div class="glass-panel" style="text-align: center;">
+                        <div class="icon-box" style="color: var(--neon-green);"><i class="fa-solid fa-clipboard-check"></i></div>
+                        <h3 style="color: #fff; font-size: 2.8cqh; margin-bottom: 1cqh;">Assessor</h3>
+                        <p class="ar-text text-muted" style="font-size: 2cqh;">مُساعد تقييم</p>
+                    </div>
+                </div>
+                <div class="glass-panel glow-border-amber" style="margin-top: 5cqh; text-align: center; width: 80%; padding: 3cqh;">
+                    <h3 style="color: var(--neon-amber); font-size: 3.5cqh; margin-bottom: 1cqh;">But there is one important condition...</h3>
+                    <p style="font-size: 3cqh; font-weight: 600;">The quality of the output depends heavily on the quality of our instructions.<br><span class="ar-text text-muted" style="font-size: 2.5cqh;">(جودة المخرجات تعتمد كلياً على جودة الأوامر!)</span></p>
+                </div>
+            </div>
+
+            <!-- Slide 4: RCTF Framework -->
+            <div class="slide">
+                <h2 class="slide-title title-center">
+                    <span>The R.C.T.F. Prompt Framework</span>
+                </h2>
+                <div class="grid-4" style="margin-top: 3cqh;">
+                    <div class="glass-panel">
+                        <h1 style="color: var(--neon-cyan); font-size: 8cqh; margin: 0; text-align: left;">R</h1>
+                        <h3 style="color: #fff; font-size: 3cqh; margin-bottom: 1cqh;">ROLE</h3>
+                        <p class="ar-text" style="font-size: 2.2cqh; color: var(--text-muted);">الدور - من يكون</p>
+                        <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 1.5cqh 0;"></div>
+                        <p style="font-size: 1.8cqh; color: var(--neon-cyan);">Ex: Act as an experienced instructional designer.</p>
+                    </div>
+                    <div class="glass-panel">
+                        <h1 style="color: var(--neon-purple); font-size: 8cqh; margin: 0; text-align: left;">C</h1>
+                        <h3 style="color: #fff; font-size: 3cqh; margin-bottom: 1cqh;">CONTEXT</h3>
+                        <p class="ar-text" style="font-size: 2.2cqh; color: var(--text-muted);">السياق - ما يجب أن يعرفه</p>
+                        <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 1.5cqh 0;"></div>
+                        <p style="font-size: 1.8cqh; color: var(--neon-purple);">Ex: Grade 6, Age 11-12, Level A2.</p>
+                    </div>
+                    <div class="glass-panel">
+                        <h1 style="color: var(--neon-green); font-size: 8cqh; margin: 0; text-align: left;">T</h1>
+                        <h3 style="color: #fff; font-size: 3cqh; margin-bottom: 1cqh;">TASK</h3>
+                        <p class="ar-text" style="font-size: 2.2cqh; color: var(--text-muted);">المهمة - ماذا يفعل</p>
+                        <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 1.5cqh 0;"></div>
+                        <p style="font-size: 1.8cqh; color: var(--neon-green);">Ex: Create a 45-min lesson plan.</p>
+                    </div>
+                    <div class="glass-panel">
+                        <h1 style="color: var(--neon-amber); font-size: 8cqh; margin: 0; text-align: left;">F</h1>
+                        <h3 style="color: #fff; font-size: 3cqh; margin-bottom: 1cqh;">FORMAT</h3>
+                        <p class="ar-text" style="font-size: 2.2cqh; color: var(--text-muted);">التنسيق - كيف تصل النتيجة</p>
+                        <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 1.5cqh 0;"></div>
+                        <p style="font-size: 1.8cqh; color: var(--neon-amber);">Ex: Present in a clear table layout.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Interactive Game -->
+            <div class="slide">
+                <h2 class="slide-title">
+                    <span>Let's Play: Build the Prompt!</span>
+                    <span class="ar-text ar-subtitle">هيا نلعب: قم ببناء الأمر</span>
+                </h2>
+                <p style="text-align: center; margin-bottom: 2cqh; color: var(--text-muted);">Drag the prompt fragments on the right and drop them into the correct R.C.T.F. category on the left.</p>
+                
+                <div class="game-layout">
+                    <!-- Drop Zones -->
+                    <div class="drop-zones-col">
+                        <div class="drop-zone" data-zone="R">
+                            <span class="zone-letter">R</span>
+                            <div class="dropped-content"></div>
+                            <span class="zone-label ar-text">الدور - من يكون</span>
+                        </div>
+                        <div class="drop-zone" data-zone="C">
+                            <span class="zone-letter">C</span>
+                            <div class="dropped-content"></div>
+                            <span class="zone-label ar-text">السياق - ما يجب أن يعرفه</span>
+                        </div>
+                        <div class="drop-zone" data-zone="T">
+                            <span class="zone-letter">T</span>
+                            <div class="dropped-content"></div>
+                            <span class="zone-label ar-text">المهمة - ماذا يفعل</span>
+                        </div>
+                        <div class="drop-zone" data-zone="F">
+                            <span class="zone-letter">F</span>
+                            <div class="dropped-content"></div>
+                            <span class="zone-label ar-text">التنسيق - كيف تصل النتيجة</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Draggable Items -->
+                    <div class="draggable-col" id="draggables-container">
+                        <div class="drag-item ar-text" draggable="true" data-match="R" id="item1">تصرّف بصفتك مصوّر بورتريه محترفًا خبيرًا ومصمّم شخصيات ثلاثية الأبعاد.</div>
+                        <div class="drag-item ar-text" draggable="true" data-match="C" id="item2">شخصان اثنان بالضبط: امرأة أنيقة في منتصف العمر بحجاب بيج وجاكيت كحلي.</div>
+                        <div class="drag-item ar-text" draggable="true" data-match="T" id="item3">ضع الطائر في أسفل اليسار والمرأة على اليمين، واقفة خلفه قليلاً.</div>
+                        <div class="drag-item ar-text" draggable="true" data-match="F" id="item4">صورة عمودية، بنسبة أبعاد 2:3، بإطار يشمل الجسم كاملاً، وبدقة عالية.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: Bad vs Pro Prompt -->
+            <div class="slide">
+                <h2 class="slide-title title-center">
+                    <span>Bad Prompt vs. Professional Prompt</span>
+                </h2>
+                <div class="two-col two-col-stretch">
+                    <div class="glass-panel glow-border-red">
+                        <h3 style="color: #fb7185; text-align: center; font-size: 3.5cqh; margin-bottom: 3cqh;"><i class="fa-solid fa-circle-xmark"></i> BAD PROMPT</h3>
+                        <p style="font-size: 3cqh; text-align: center; margin-bottom: 4cqh; font-style: italic;">"Create a lesson plan about Present Simple."</p>
+                        <div>
+                            <p style="color: #fb7185; font-weight: bold; font-size: 2.8cqh;">What is missing?</p>
+                            <ul style="color: #94a3b8; font-size: 2.5cqh; margin-left: 3cqw; margin-top: 1cqh; line-height: 1.8;">
+                                <li>Grade & Age?</li>
+                                <li>Level & Duration?</li>
+                                <li>Learning Objectives?</li>
+                                <li>Activities & Assessment?</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="glass-panel glow-border-green">
+                        <h3 style="color: var(--neon-green); text-align: center; font-size: 3.5cqh; margin-bottom: 3cqh;"><i class="fa-solid fa-circle-check"></i> PROFESSIONAL</h3>
+                        <div class="prompt-code" style="font-size: 2.2cqh; background: transparent; border: none; padding: 0;">
+                            <span class="text-green">Act as</span> an experienced English teacher.<br><br>
+                            <span class="text-green">Create</span> a 45-min lesson plan for <span class="text-green">Grade 6</span> (Age 11-12, A1-A2).<br>
+                            <strong>Topic:</strong> Present Simple – Daily Routines.<br><br>
+                            <strong>Include:</strong> Starter, Presentation, Guided Practice, Assessment.<br><br>
+                            <span class="text-green">Format:</span> Use student-centered activities. Present in a table.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: Live Demo Workflow -->
+            <div class="slide">
+                <h2 class="slide-title">
+                    <span>Let's Stop Guessing. Let's Upload!</span>
+                </h2>
+                <div class="two-col">
+                    <div class="glass-panel glow-edge-cyan">
+                        <p style="font-size: 3cqh; color: var(--text-main); margin-bottom: 3cqh;">Instead of asking AI to invent a new lesson, let's provide it with the materials we already use!</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 2cqh; font-size: 3cqh; font-weight: 600;">
+                            <div style="display: flex; align-items: center; gap: 2cqw;"><i class="fa-solid fa-file-arrow-up text-cyan" style="width: 4cqw;"></i> UPLOAD</div>
+                            <div style="display: flex; align-items: center; gap: 2cqw;"><i class="fa-solid fa-magnifying-glass-chart text-purple" style="width: 4cqw;"></i> ANALYZE</div>
+                            <div style="display: flex; align-items: center; gap: 2cqw;"><i class="fa-solid fa-thumbs-up text-green" style="width: 4cqw;"></i> CONFIRM</div>
+                            <div style="display: flex; align-items: center; gap: 2cqw;"><i class="fa-solid fa-wand-magic-sparkles text-amber" style="width: 4cqw;"></i> CREATE</div>
+                        </div>
+                        
+                        <div class="highlight-banner" style="margin-top: 4cqh; border-color: rgba(244, 63, 94, 0.5);">
+                            <p style="margin: 0; font-size: 2.5cqh; color: #fb7185;">Not: Upload <i class="fa-solid fa-arrow-right"></i> Generate <i class="fa-solid fa-arrow-right"></i> Pray! 😂</p>
+                        </div>
+                    </div>
+                    <div class="media-container" style="border-color: var(--neon-cyan);">
+                        <i class="fa-solid fa-file-pdf anim-float" style="font-size: 7cqh; color: var(--neon-cyan);"></i>
+                        <i class="fa-solid fa-arrow-right-long" style="font-size: 4cqh; color: rgba(255,255,255,0.2);"></i>
+                        <i class="fa-solid fa-microchip anim-pulse" style="font-size: 9cqh; color: var(--neon-purple);"></i>
+                        <i class="fa-solid fa-arrow-right-long" style="font-size: 4cqh; color: rgba(255,255,255,0.2);"></i>
+                        <i class="fa-solid fa-wand-magic-sparkles anim-float-delayed" style="font-size: 7cqh; color: var(--neon-amber);"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: Lesson Demo -->
+            <div class="slide">
+                <h2 class="slide-title">
+                    <span>Live Demo: Analyze the Lesson</span>
+                    <span class="ar-text ar-subtitle">تحليل الدرس</span>
+                </h2>
+                <div class="glass-panel" style="width: 100%;">
+                    <h3 style="color: var(--neon-cyan); margin-bottom: 2cqh; font-size: 3.5cqh;"><i class="fa-solid fa-terminal"></i> The Analysis Prompt</h3>
+                    <div class="prompt-code" style="font-size: 2.6cqh;">
+                        "Analyze the uploaded lesson material.<br>
+                        Identify: Topic, Learning objectives, Key vocabulary, Skills, Suggested activities, Assessment opportunities.<br><br>
+                        <span style="color: #fb7185; font-weight: bold;">Do not create the lesson plan yet.</span><br><br>
+                        First, summarize your understanding of the material and wait for my confirmation."
+                    </div>
+                </div>
+                <div class="glass-panel glow-border-green ar-text" style="width: 100%; margin-top: 3cqh; text-align: center; padding: 2cqh;">
+                    <p style="font-size: 3cqh; margin: 0; color: var(--neon-green); font-weight: bold;">
+                        <i class="fa-solid fa-language"></i> ملحوظة هامة: نفس هذه الخطوات وهذا التسلسل يعمل بكفاءة تامة مع المصادر باللغة العربية!
+                    </p>
+                    <p style="font-family: 'Inter'; font-size: 2.2cqh; color: var(--text-muted); margin-top: 1cqh;">(Works seamlessly with Arabic materials using the exact same framework)</p>
+                </div>
+            </div>
+
+            <!-- Slide 9: Template WOW Moment -->
+            <div class="slide">
+                <h2 class="slide-title title-center">
+                    <span>What if I already have a school template?</span>
+                </h2>
+                <div class="glass-panel ar-text glow-border-amber" style="text-align: center; width: 100%; margin-bottom: 4cqh;">
+                    <h2 style="color: var(--neon-amber); font-size: 4.5cqh; margin-bottom: 1.5cqh; font-weight: bold;">"لا تجعل ChatGPT ينشئ قالبي.. بل علّمه كيف يتبع قالبي"</h2>
+                    <p style="font-size: 2.8cqh; color: var(--text-muted); font-family: 'Inter', sans-serif;" dir="ltr">Don't make ChatGPT create my template. Teach it to follow yours.</p>
+                </div>
+                
+                <div class="workflow">
+                    <div class="flow-node">1. TEMPLATE</div>
+                    <i class="fa-solid fa-arrow-right-long flow-arrow"></i>
+                    <div class="flow-node">2. ANALYZE</div>
+                    <i class="fa-solid fa-arrow-right-long flow-arrow"></i>
+                    <div class="flow-node">3. FOLLOW</div>
+                    <i class="fa-solid fa-arrow-right-long flow-arrow" style="color: var(--neon-purple);"></i>
+                    <div class="flow-node active">4. COMPLETE</div>
+                </div>
+            </div>
+
+            <!-- Slide 10: Master Prompt -->
+            <div class="slide">
+                <h2 class="slide-title">
+                    <span>MASTER LESSON PLAN PROMPT</span>
+                    <span class="ar-text ar-subtitle">الأمر الشامل لتخطيط الدروس</span>
+                </h2>
+                <div class="glass-panel border-cyan code-box" style="font-size: 2cqh; line-height: 1.5; display: flex; flex-direction: column; gap: 1.5cqh; border-width: 2px; padding: 3cqh 4cqw;">
+                    <div><span style="color: var(--neon-cyan); font-weight: bold;">[ROLE]</span> Act as an experienced instructional designer and educational technology specialist.</div>
+                    
+                    <div><span style="color: var(--neon-purple); font-weight: bold;">[TASK]</span> Your task is to help me transform the uploaded teaching material into a structured lesson plan.</div>
+                    
+                    <div><span style="color: var(--neon-amber); font-weight: bold;">[ANALYZE]</span> First, analyze the uploaded material before generating anything. Identify the topic, learning objectives, key concepts, skills, activities, resources, and assessment opportunities.<br>
+                    Then analyze the uploaded lesson-plan template and identify its structure, required sections, sequence, and formatting logic. <strong>Do not redesign or modify the template.</strong></div>
+                    
+                    <div><span style="color: var(--neon-orange); font-weight: bold;">[LIMITS]</span> Create the lesson plan using the same structure and sequence as the uploaded template. <strong>Use only information supported by the uploaded teaching material. Do not invent missing curriculum content.</strong> If essential information is missing, clearly identify it and ask for clarification.</div>
+                    
+                    <div><span style="color: var(--neon-green); font-weight: bold;">[ADAPT & INCLUDE]</span> Adapt the language, examples, activities, and level to the learners described in the source material. Include appropriate:
+                        <ul style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5cqh; margin-left: 3cqw; margin-top: 1cqh; color: var(--text-main); list-style-type: square;">
+                            <li style="font-size: 1.9cqh; line-height: 1.4;">Learning objectives</li>
+                            <li style="font-size: 1.9cqh; line-height: 1.4;">Timing</li>
+                            <li style="font-size: 1.9cqh; line-height: 1.4;">Teaching & learning activities</li>
+                            <li style="font-size: 1.9cqh; line-height: 1.4;">Differentiation</li>
+                            <li style="font-size: 1.9cqh; line-height: 1.4;">Formative assessment</li>
+                            <li style="font-size: 1.9cqh; line-height: 1.4;">Resources</li>
+                            <li style="font-size: 1.9cqh; line-height: 1.4; grid-column: span 3;">Student-centered learning strategies</li>
+                        </ul>
+                    </div>
+                    
+                    <div><span style="color: var(--neon-cyan); font-weight: bold;">[FORMAT & OUTPUT]</span> Before finalizing, review the lesson plan against the original material and template and identify any inconsistencies. Output the final lesson plan in the uploaded template structure.</div>
+                </div>
+            </div>
+
+            <!-- Slide 11: Workflow Summary -->
+            <div class="slide">
+                <h2 class="slide-title">
+                    <span>My Lesson Planning Workflow</span>
+                </h2>
+                <div class="two-col">
+                    <div class="glass-panel glow-edge-cyan">
+                        <ul class="custom-list" style="font-size: 2.6cqh;">
+                            <li><strong class="text-cyan">01 DEFINE:</strong> What do I want?</li>
+                            <li><strong class="text-cyan">02 CONTEXT:</strong> Who are my learners?</li>
+                            <li><strong class="text-cyan">03 PROVIDE:</strong> What are the resources/templates?</li>
+                            <li><strong class="text-cyan">04 INSTRUCT:</strong> What exactly should it do?</li>
+                            <li><strong class="text-cyan">05 CONSTRAIN:</strong> What are the limits?</li>
+                            <li><strong class="text-cyan">06 REVIEW:</strong> Does the output make educational sense?</li>
+                            <li><strong class="text-cyan">07 REFINE:</strong> What needs adjustment?</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel glow-edge-purple" style="text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+                        <i class="fa-solid fa-robot" style="font-size: 10cqh; color: var(--neon-purple); margin-bottom: 3cqh; text-shadow: 0 0 20px rgba(217,70,239,0.5);"></i>
+                        <h3 style="font-size: 4cqh; color: #fff; margin-bottom: 1.5cqh;">Custom GPTs</h3>
+                        <p style="font-size: 2.8cqh; color: var(--text-muted);">The next step: Save your workflow and school template as your personal AI Assistant!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 12: Final -->
+            <div class="slide">
+                <h2 style="font-size: 5cqh; color: #fff; text-align: center; margin-bottom: 5cqh; line-height: 1.4;">
+                    AI doesn't replace the teacher.<br>
+                    <span style="color: var(--neon-cyan);">It amplifies the teacher's expertise.</span>
+                </h2>
+                
+                <div class="glass-panel" style="text-align: center; width: 80%; margin: 0 auto; background: rgba(13, 20, 38, 0.9);">
+                    <p style="font-size: 3.5cqh; font-weight: 600; color: #e2e8f0; line-height: 2;">
+                        Teacher Expertise <i class="fa-solid fa-plus" style="color: var(--neon-purple); font-size:2cqh; margin:0 2cqw;"></i><br>
+                        Well-Engineered Prompt <i class="fa-solid fa-plus" style="color: var(--neon-purple); font-size:2cqh; margin:0 2cqw;"></i><br>
+                        Authentic Resources <i class="fa-solid fa-plus" style="color: var(--neon-purple); font-size:2cqh; margin:0 2cqw;"></i><br>
+                        Professional Review
+                    </p>
+                    <div style="margin: 3cqh auto; width: 10cqw; height: 2px; background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green);"></div>
+                    <h2 style="color: var(--neon-green); font-size: 5cqh; text-shadow: 0 0 15px rgba(16,185,129,0.4);">A Practical Lesson Plan</h2>
+                </div>
+                
+                <p style="text-align: center; margin-top: 5cqh; font-size: 3cqh; font-weight: bold; color: var(--text-muted);">
+                    "The goal is not to let AI plan for us. The goal is to use AI to plan better, faster, and more intentionally."
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="controls-overlay">
+            <button class="btn-control" id="prevBtn" onclick="changeSlide(-1)">
+                <i class="fa-solid fa-chevron-left"></i> Prev
+            </button>
+            <div class="progress-text">
+                <span id="currentSlideNum">1</span> / 12
+            </div>
+            <button class="btn-control" id="nextBtn" onclick="changeSlide(1)">
+                Next <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const counter = document.getElementById('currentSlideNum');
+
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            counter.innerText = currentSlide + 1;
+            
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+            updateSlides();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                if(currentSlide < slides.length - 1) changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                if(currentSlide > 0) changeSlide(-1);
+            }
+        });
+
+        // Initialize Slides
+        updateSlides();
+
+        // Drag and Drop Logic for the Game
+        const draggables = document.querySelectorAll('.drag-item');
+        const dropZones = document.querySelectorAll('.drop-zone');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggable.classList.add('dragging');
+            });
+
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('dragging');
+            });
+        });
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault(); // Necessary to allow dropping
+                zone.classList.add('drag-over');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-over');
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                
+                const draggable = document.querySelector('.dragging');
+                if (!draggable) return;
+
+                const expectedMatch = draggable.getAttribute('data-match');
+                const targetZone = zone.getAttribute('data-zone');
+
+                if (expectedMatch === targetZone) {
+                    // Match successful
+                    const contentDiv = zone.querySelector('.dropped-content');
+                    const label = zone.querySelector('.zone-label');
+                    
+                    // Hide original label, show dropped text
+                    label.style.display = 'none';
+                    contentDiv.innerText = draggable.innerText;
+                    
+                    // Highlight success
+                    zone.style.borderColor = 'var(--neon-green)';
+                    zone.style.background = 'rgba(16, 185, 129, 0.1)';
+                    
+                    // Disable draggable item in the list
+                    draggable.classList.add('correct');
+                    draggable.setAttribute('draggable', 'false');
+                    draggable.innerText = '✓ Correctly Placed';
+                } else {
+                    // Visual feedback for wrong drop (shake effect)
+                    zone.style.borderColor = '#fb7185';
+                    setTimeout(() => {
+                        zone.style.borderColor = 'rgba(255,255,255,0.1)';
+                    }, 500);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
